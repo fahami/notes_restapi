@@ -16,8 +16,7 @@ class NotesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: BlocProvider(
-        create: (_) =>
-            sl<NoteBloc>()..add(const GetTodosEvent("GrFpmSJo9cUAQb537DE4")),
+        create: (_) => sl<NoteBloc>(),
         child: Column(
           children: [
             SafeArea(
