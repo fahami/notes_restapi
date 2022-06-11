@@ -19,17 +19,20 @@ class TodoColorAdapter extends TypeAdapter<TodoColor> {
     return TodoColor(
       fields[0] as String,
       fields[1] as String,
+      fields[2] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, TodoColor obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.colorType);
+      ..write(obj.colorType)
+      ..writeByte(2)
+      ..write(obj.colorName);
   }
 
   @override

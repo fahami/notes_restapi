@@ -8,9 +8,11 @@ class TodoColor extends HiveObject with EquatableMixin {
   String id;
   @HiveField(1)
   final String colorType;
+  @HiveField(2)
+  final String colorName;
 
-  TodoColor(this.id, this.colorType);
+  TodoColor(this.id, this.colorType, this.colorName);
 
   @override
-  List<Object?> get props => [id, colorType];
+  List<Object?> get props => [id, colorType, colorName];
 }

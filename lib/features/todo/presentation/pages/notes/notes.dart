@@ -60,27 +60,6 @@ class NotesScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    BlocBuilder<NoteBloc, NoteState>(
-                      builder: (context, state) {
-                        if (state is Loaded) {
-                          return Text(state.todos.toString());
-                        } else if (state is Error) {
-                          return const Text("Error");
-                        } else if (state is Loading) {
-                          return const Text("Loading");
-                        } else {
-                          return const Text("Initial");
-                        }
-                      },
-                    ),
-                    Builder(builder: (context) {
-                      return TextButton(
-                          onPressed: () {
-                            BlocProvider.of<NoteBloc>(context).add(
-                                const GetTodosEvent("GrFpmSJo9cUAQb537DE4"));
-                          },
-                          child: const Text("Load data"));
-                    }),
                   ],
                 ),
               ),
