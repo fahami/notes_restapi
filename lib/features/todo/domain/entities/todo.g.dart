@@ -17,12 +17,12 @@ class TodoAdapter extends TypeAdapter<Todo> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Todo(
-      id: fields[0] as String,
+      id: fields[0] as int?,
       title: fields[1] as String,
       isi: fields[2] as String,
-      colorId: fields[3] as int,
+      color: fields[3] as ColorModel,
       reminder: fields[5] as DateTime,
-      userId: fields[4] as String,
+      user: fields[4] as UserModel,
     );
   }
 
@@ -37,9 +37,9 @@ class TodoAdapter extends TypeAdapter<Todo> {
       ..writeByte(2)
       ..write(obj.isi)
       ..writeByte(3)
-      ..write(obj.colorId)
+      ..write(obj.color)
       ..writeByte(4)
-      ..write(obj.userId)
+      ..write(obj.user)
       ..writeByte(5)
       ..write(obj.reminder);
   }

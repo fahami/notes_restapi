@@ -1,10 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:notes_restapi/core/error/exception.dart';
 import 'package:notes_restapi/features/todo/data/model/todo_model.dart';
 
 abstract class TodoRemoteDataSource {
-  Future<List<TodoModel>> getTodos();
-  Future<TodoModel> getTodoById(String id);
+  Future<List<TodoModel>> getTodos(int userId);
+  Future<TodoModel> getTodoById(int id);
   Future<void> addTodo(TodoModel todo);
   Future<void> deleteTodo(TodoModel todo);
   Future<void> updateTodo(TodoModel todo);
@@ -12,43 +11,41 @@ abstract class TodoRemoteDataSource {
 }
 
 class TodoRemoteDataSourceImpl implements TodoRemoteDataSource {
-  final Dio fireStore;
+  final Dio http;
 
-  TodoRemoteDataSourceImpl(this.fireStore);
+  TodoRemoteDataSourceImpl(this.http);
 
   @override
-  Future<void> addTodo(TodoModel todo) {
-    // TODO: implement addTodo
-    throw UnimplementedError();
+  Future<void> addTodo(TodoModel todo) async {
+    await http.post('/todo', data: todo.toJson());
   }
 
   @override
-  Future<void> deleteAllTodos() {
-    // TODO: implement deleteAllTodos
-    throw UnimplementedError();
+  Future<void> deleteAllTodos() async {
+    await http.delete('/todo');
   }
 
   @override
-  Future<void> deleteTodo(TodoModel todo) {
-    // TODO: implement deleteTodo
-    throw UnimplementedError();
+  Future<void> deleteTodo(TodoModel todo) async {
+    await http.delete('/todo/${todo.id}');
   }
 
   @override
-  Future<TodoModel> getTodoById(String id) {
-    // TODO: implement getTodoById
-    throw UnimplementedError();
+  Future<TodoModel> getTodoById(int id) async {
+    return await http
+        .get('/todo/$id')
+        .then((res) => TodoModel.fromJson(res.data));
   }
 
   @override
-  Future<List<TodoModel>> getTodos() {
-    // TODO: implement getTodos
-    throw UnimplementedError();
+  Future<List<TodoModel>> getTodos(int userid) async {
+    return await http
+        .get('/todo')
+        .then((res) => res.data.map((e) => TodoModel.fromJson(e)).toList());
   }
 
   @override
-  Future<void> updateTodo(TodoModel todo) {
-    // TODO: implement updateTodo
-    throw UnimplementedError();
+  Future<void> updateTodo(TodoModel todo) async {
+    await http.put('/todo/${todo.id}', data: todo.toJson());
   }
 }

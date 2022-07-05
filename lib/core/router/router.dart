@@ -32,11 +32,12 @@ class AppRouter {
       ),
       GoRoute(
         path: '/note/new',
-        builder: (context, state) => NoteDetailScreen(isNew: true),
+        builder: (context, state) => const NoteDetailScreen(isNew: true),
       ),
       GoRoute(
         path: '/note/:id',
-        builder: (context, state) => NoteDetailScreen(id: state.params['id']!),
+        builder: (context, state) =>
+            NoteDetailScreen(id: int.tryParse(state.params['id']!)),
       ),
     ],
     errorBuilder: (context, state) => const ErrorScreen(),

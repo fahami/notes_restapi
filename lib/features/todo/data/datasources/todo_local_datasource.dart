@@ -4,7 +4,7 @@ import 'package:notes_restapi/features/todo/data/model/todo_model.dart';
 
 abstract class TodoLocalDataSource {
   List<TodoModel> getTodos();
-  TodoModel getTodoById(String id);
+  TodoModel getTodoById(int id);
   Future<void> cacheTodo(TodoModel todoToCache);
   Future<void> updateTodo(TodoModel todo);
   Future<void> deleteTodo(TodoModel todo);
@@ -32,7 +32,7 @@ class TodoLocalDataSourceImpl implements TodoLocalDataSource {
   }
 
   @override
-  TodoModel getTodoById(String id) {
+  TodoModel getTodoById(int id) {
     final todo = hiveBox.get(id);
     if (todo != null) {
       return todo;

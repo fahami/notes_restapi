@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/adapters.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:notes_restapi/core/network/network_info.dart';
+import 'package:notes_restapi/features/auth/data/model/user_model.dart';
 import 'package:notes_restapi/features/todo/data/datasources/color_local_datasource.dart';
 import 'package:notes_restapi/features/todo/data/datasources/color_remote_datasource.dart';
 import 'package:notes_restapi/features/todo/data/datasources/todo_local_datasource.dart';
@@ -21,7 +21,9 @@ import 'package:notes_restapi/features/todo/domain/usecases/get_colors.dart';
 import 'package:notes_restapi/features/todo/domain/usecases/get_todo_by_id.dart';
 import 'package:notes_restapi/features/todo/domain/usecases/get_todos.dart';
 import 'package:notes_restapi/features/todo/domain/usecases/update_todo.dart';
-import 'package:notes_restapi/features/todo/presentation/bloc/note_bloc.dart';
+import 'package:notes_restapi/features/todo/presentation/bloc/edit_todo_bloc.dart';
+import 'package:notes_restapi/features/todo/presentation/bloc/todo_bloc.dart';
+import 'package:notes_restapi/features/todo/presentation/cubit/color_cubit.dart';
 
 import 'features/todo/data/model/color_model.dart';
 
@@ -30,15 +32,19 @@ final sl = GetIt.instance;
 Future<void> init() async {
   // bloc
   sl.registerFactory(
-    () => NoteBloc(
-      addTodo: sl(),
-      deleteTodo: sl(),
+    () => TodoBloc(
       getTodos: sl(),
       deleteAllTodo: sl(),
-      getTodoById: sl(),
-      updateTodo: sl(),
     ),
   );
+
+  sl.registerFactory(() => ColorCubit(sl()));
+  sl.registerFactory(() => EditTodoBloc(
+        addTodo: sl(),
+        deleteTodo: sl(),
+        getTodoById: sl(),
+        updateTodo: sl(),
+      ));
 
   // usecases
   sl.registerLazySingleton(() => GetTodos(sl()));
@@ -82,9 +88,11 @@ Future<void> init() async {
   Hive.registerAdapter(ColorAdapter());
   final Box<TodoModel> todoBox = await Hive.openBox<TodoModel>('todos');
   final Box<ColorModel> colorBox = await Hive.openBox<ColorModel>('colors');
+  final Box<UserModel> userBox = await Hive.openBox<UserModel>('user');
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
   sl.registerLazySingleton(() => InternetConnectionChecker());
   sl.registerLazySingleton(() => firestore);
   sl.registerLazySingleton(() => todoBox);
   sl.registerLazySingleton(() => colorBox);
+  sl.registerLazySingleton(() => userBox);
 }

@@ -1,5 +1,6 @@
 import 'package:notes_restapi/core/error/exception.dart';
 import 'package:notes_restapi/core/network/network_info.dart';
+import 'package:notes_restapi/features/auth/domain/repositories/auth_repository.dart';
 import 'package:notes_restapi/features/todo/data/datasources/todo_local_datasource.dart';
 import 'package:notes_restapi/features/todo/data/datasources/todo_remote_datasource.dart';
 import 'package:notes_restapi/features/todo/data/model/todo_model.dart';
@@ -8,7 +9,7 @@ import 'package:notes_restapi/core/error/failures.dart';
 import 'package:dartz/dartz.dart';
 import 'package:notes_restapi/features/todo/domain/repositories/todos_repository.dart';
 
-class TodoRepositoryImpl implements TodoRepository {
+class TodoRepositoryImpl implements AuthRepository {
   final TodoLocalDataSource localDataSource;
   final TodoRemoteDataSource remoteDataSource;
   final NetworkInfo networkInfo;

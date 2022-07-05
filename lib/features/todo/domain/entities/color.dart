@@ -5,7 +5,7 @@ part 'color.g.dart';
 @HiveType(typeId: 1)
 class TodoColor extends HiveObject with EquatableMixin {
   @HiveField(0)
-  String id;
+  int id;
   @HiveField(1)
   final String colorType;
   @HiveField(2)

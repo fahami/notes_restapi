@@ -1,14 +1,30 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hexcolor/hexcolor.dart';
+import 'package:hive/hive.dart';
 import 'package:notes_restapi/core/theme/color_theme.dart';
 import 'package:notes_restapi/core/theme/text_theme.dart';
+import 'package:notes_restapi/core/util/debouncer.dart';
 import 'package:notes_restapi/core/util/utils.dart';
+import 'package:notes_restapi/features/auth/data/model/user_model.dart';
+import 'package:notes_restapi/features/todo/data/model/color_model.dart';
+import 'package:notes_restapi/features/todo/data/model/todo_model.dart';
+import 'package:notes_restapi/features/todo/domain/entities/color.dart';
+import 'package:notes_restapi/features/todo/presentation/bloc/edit_todo_bloc.dart';
+import 'package:notes_restapi/features/todo/presentation/bloc/todo_bloc.dart';
+import 'package:notes_restapi/features/todo/presentation/cubit/color_cubit.dart';
+import 'package:notes_restapi/features/todo/presentation/pages/note/widgets/delete.dart';
+import 'package:notes_restapi/features/todo/presentation/pages/note/widgets/save.dart';
+import 'package:notes_restapi/features/todo/presentation/pages/note/widgets/swatch.dart';
 import 'package:share_plus/share_plus.dart';
 
 class NoteDetailScreen extends StatefulWidget {
   const NoteDetailScreen({Key? key, this.id, this.isNew = false})
       : super(key: key);
-  final String? id;
+  final int? id;
   final bool isNew;
 
   @override
@@ -20,267 +36,248 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
 
   final TextEditingController _contentController = TextEditingController();
   bool isAction = false;
-  Color selectedColor = Colors.white;
+  final debouncer = Debouncer(milliseconds: 1000);
+  var box = Hive.box<UserModel>('user');
+
+  late TodoModel todo;
+
   @override
   void initState() {
-    _titleController.text = widget.isNew ? "" : "Dear Diary";
-    _contentController.text = widget.isNew
-        ? ""
-        : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+    todo
+      ..id = Random().nextInt(100)
+      ..user = box.get('user')!
+      ..color = ColorModel(id: 6, colorName: "white", colorType: "#ffffff")
+      ..reminder = DateTime.now()
+      ..title = ""
+      ..isi = "";
+    if (!widget.isNew) context.read<EditTodoBloc>().add(EditLoad(widget.id!));
+    if (widget.isNew) {
+      context.read<EditTodoBloc>()
+        ..emit(EditLoaded(todo))
+        ..add(EditSave(todo: todo));
+    }
     super.initState();
   }
 
-  final colors = [
-    Colors.white,
-    ThemeColor.accentColor,
-    ThemeColor.greenish,
-    ThemeColor.pinky,
-    ThemeColor.primaryColor,
-  ];
-
-  List<Widget> _buildAction() {
+  List<Widget> _buildAction(BuildContext context, TodoModel todo) {
     return isAction
         ? [
             BuildSwatch(
-              colors: colors,
-              selectColor: (color) {
+              selectColor: (TodoColor value) {
                 setState(() {
-                  selectedColor = color;
+                  todo.color = value as ColorModel;
                 });
               },
+              context: context,
             ),
-            const DeleteButton(),
+            DeleteButton(
+              context: context,
+              todo: todo,
+            ),
             SaveButton(
-                contentController: _contentController, isNew: widget.isNew),
+              context: context,
+              todo: todo,
+            ),
           ]
         : [Container()];
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: selectedColor,
-      appBar: AppBar(
-        iconTheme: IconThemeData(color: ThemeColor.typography),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.share,
-              color: ThemeColor.typography,
-            ),
-            onPressed: () => Share.share(_contentController.text),
-          ),
-        ],
-      ),
-      body: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextFormField(
-              controller: _titleController,
-              decoration: InputDecoration(
-                  hintText: "Judul",
-                  border: InputBorder.none,
-                  hintStyle: ThemeText.alternativeStyle.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 36,
-                      color: selectedColor.computeLuminance() > 0.5
-                          ? ThemeColor.typography
-                          : Colors.white)),
-              style: ThemeText.alternativeStyle.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 36,
-                  color: selectedColor.computeLuminance() > 0.5
-                      ? ThemeColor.typography
-                      : Colors.white),
-            ),
-            Text(
-              widget.isNew
-                  ? simpleDate(DateTime.now().toIso8601String())
-                  : "Selasa, 17 November 2022 • 320 Karakter",
-              style: ThemeText.captionStyle.copyWith(
-                  color: selectedColor.computeLuminance() > 0.5
-                      ? ThemeColor.typography
-                      : Colors.white),
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: ListView(
-                children: [
-                  TextFormField(
-                    controller: _contentController,
-                    style: ThemeText.captionStyle.copyWith(
-                        color: selectedColor.computeLuminance() > 0.5
-                            ? ThemeColor.typography
-                            : Colors.white),
-                    maxLines: null,
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: "Tulis sesuatu...",
-                      hintStyle: ThemeText.captionStyle.copyWith(
-                          color: selectedColor.computeLuminance() > 0.5
-                              ? ThemeColor.typography
-                              : Colors.white),
-                    ),
-                  )
-                ],
-              ),
-            )
-          ],
-        ),
-      ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              spreadRadius: 8,
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AnimatedSwitcher(
-                switchInCurve: Curves.bounceIn,
-                switchOutCurve: Curves.easeOutCirc,
-                duration: const Duration(seconds: 2),
-                child: Column(
-                  children: _buildAction(),
-                )),
-            ListTile(
-              title: Text(
-                widget.isNew
-                    ? simpleDate(DateTime.now().toIso8601String())
-                    : "Selasa, 17 November 2022 • 320 Karakter",
-                style:
-                    ThemeText.captionStyle.copyWith(color: ThemeColor.caption),
-              ),
-              trailing: IconButton(
-                onPressed: () {
-                  setState(() {
-                    isAction = !isAction;
-                  });
-                },
-                icon: Icon(
-                  Icons.more_vert,
-                  color: ThemeColor.typography,
-                ),
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class SaveButton extends StatelessWidget {
-  const SaveButton({
-    Key? key,
-    required this.isNew,
-    required TextEditingController contentController,
-  })  : _contentController = contentController,
-        super(key: key);
-
-  final bool isNew;
-  final TextEditingController _contentController;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(
-        Icons.save,
-        color: ThemeColor.typography,
-      ),
-      title: Text(
-        "Simpan",
-        style: ThemeText.bodyStyle,
-      ),
-      onTap: () {
-        if (isNew) {
-          Navigator.pop(context);
-        } else {
-          Navigator.pop(context, _contentController.text);
+    return BlocConsumer<ColorCubit, ColorState>(
+      listener: (context, state) {
+        if (state is ColorLoaded) {
+          setState(() {
+            todo.color = context.read<ColorCubit>().selectedColor as ColorModel;
+          });
+          context.read<EditTodoBloc>().add(EditSave(todo: todo));
         }
       },
-    );
-  }
-}
-
-class DeleteButton extends StatelessWidget {
-  const DeleteButton({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(
-        Icons.delete,
-        color: ThemeColor.typography,
-      ),
-      title: Text(
-        "Hapus",
-        style: ThemeText.bodyStyle,
-      ),
-      onTap: () {
-        Navigator.pop(context, null);
-      },
-    );
-  }
-}
-
-class BuildSwatch extends StatelessWidget {
-  const BuildSwatch({
-    Key? key,
-    required this.colors,
-    required this.selectColor,
-  }) : super(key: key);
-
-  final List<Color> colors;
-  final ValueChanged<Color> selectColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 48,
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: colors.length,
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemBuilder: (context, index) {
-          return Container(
-            margin: const EdgeInsets.only(right: 16),
-            child: InkWell(
-              child: Container(
-                height: 40,
-                width: 40,
-                decoration: BoxDecoration(
-                  color: colors[index],
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: colors[index].computeLuminance() > 0.5
-                        ? ThemeColor.disabled
-                        : Colors.white,
-                    width: 2,
-                  ),
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor:
+              HexColor(context.read<ColorCubit>().selectedColor.colorType),
+          appBar: AppBar(
+            iconTheme: IconThemeData(color: ThemeColor.typography),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            systemOverlayStyle: SystemUiOverlayStyle.dark,
+            actions: [
+              IconButton(
+                icon: Icon(
+                  Icons.share,
+                  color: ThemeColor.typography,
                 ),
+                onPressed: () => Share.share(_contentController.text),
               ),
-              onTap: () => selectColor(colors.elementAt(index)),
+            ],
+          ),
+          body: BlocConsumer<EditTodoBloc, EditTodoState>(
+            listener: (context, editState) {
+              if (editState is EditLoaded) {
+                if (!widget.isNew) {
+                  _titleController.text = editState.todo.title;
+                  _contentController.text = editState.todo.isi;
+                  todo = editState.todo;
+                  context
+                      .read<ColorCubit>()
+                      .changeColor(editState.todo.color.id);
+                }
+              }
+              if (editState is EditSaved) {
+                Navigator.pop(context);
+              }
+              if (editState is EditDeleted) {
+                Navigator.pop(context);
+                context.read<TodoBloc>().add(DeleteTodoEvent(todo.id!));
+              }
+            },
+            builder: (context, editTodoState) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: BlocBuilder<EditTodoBloc, EditTodoState>(
+                  builder: (context, todoState) {
+                    if (todoState is EditLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (todoState is TodosError) {
+                      return const Text("Error");
+                    } else if (todoState is EditLoaded) {
+                      final state =
+                          context.read<ColorCubit>().state as ColorLoaded;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextFormField(
+                            controller: _titleController,
+                            decoration: InputDecoration(
+                                hintText: "Judul",
+                                border: InputBorder.none,
+                                hintStyle: ThemeText.alternativeStyle.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 36,
+                                    color: state.color.computeLuminance() > 0.5
+                                        ? ThemeColor.typography
+                                        : Colors.white)),
+                            style: ThemeText.alternativeStyle.copyWith(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 36,
+                                color: state.color.computeLuminance() > 0.5
+                                    ? ThemeColor.typography
+                                    : Colors.white),
+                            onChanged: (v) {
+                              todo.title = v;
+                              print(todo.title);
+                            },
+                          ),
+                          Text(
+                            widget.isNew
+                                ? "${simpleDate(DateTime.now().toIso8601String())} • ${_contentController.text.length} Karakter"
+                                : "${simpleDate(todo.reminder.toIso8601String())} • ${_contentController.text.length} Karakter",
+                            style: ThemeText.captionStyle.copyWith(
+                                color: state.color.computeLuminance() > 0.5
+                                    ? ThemeColor.disabled
+                                    : Colors.white),
+                          ),
+                          const SizedBox(height: 8),
+                          Expanded(
+                            child: ListView(
+                              children: [
+                                TextFormField(
+                                  controller: _contentController,
+                                  style: ThemeText.captionStyle.copyWith(
+                                      color:
+                                          state.color.computeLuminance() > 0.5
+                                              ? ThemeColor.typography
+                                              : Colors.white),
+                                  maxLines: null,
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: "Tulis sesuatu...",
+                                    hintStyle: ThemeText.captionStyle.copyWith(
+                                        color:
+                                            state.color.computeLuminance() > 0.5
+                                                ? ThemeColor.typography
+                                                : Colors.white),
+                                  ),
+                                  onChanged: (v) {
+                                    setState(() {
+                                      todo.isi = v;
+                                      todo.reminder = DateTime.now();
+                                    });
+
+                                    debouncer.run(() {
+                                      context
+                                          .read<EditTodoBloc>()
+                                          .add(EditSave(todo: todo));
+                                    });
+                                  },
+                                )
+                              ],
+                            ),
+                          )
+                        ],
+                      );
+                    } else {
+                      return Container();
+                    }
+                  },
+                ),
+              );
+            },
+          ),
+          bottomNavigationBar: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  spreadRadius: 8,
+                ),
+              ],
             ),
-          );
-        },
-      ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedSwitcher(
+                    switchInCurve: Curves.bounceIn,
+                    switchOutCurve: Curves.easeOutCirc,
+                    duration: const Duration(seconds: 2),
+                    child: Column(
+                      children: _buildAction(context, todo),
+                    )),
+                ListTile(
+                  leading: context.read<EditTodoBloc>().state is EditSaved
+                      ? Icon(Icons.check,
+                          color: ThemeColor.greenish,
+                          key: const Key("auto-save"))
+                      : const SizedBox(),
+                  title: Text(
+                    widget.isNew
+                        ? "${simpleDate(DateTime.now().toIso8601String())} • ${_contentController.text.length} Karakter"
+                        : "${simpleDate(todo.reminder.toIso8601String())} • ${_contentController.text.length} Karakter",
+                    style: ThemeText.captionStyle
+                        .copyWith(color: ThemeColor.caption),
+                  ),
+                  trailing: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        isAction = !isAction;
+                      });
+                    },
+                    icon: Icon(
+                      Icons.more_vert,
+                      color: ThemeColor.typography,
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

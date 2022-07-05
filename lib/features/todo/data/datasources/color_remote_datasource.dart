@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:notes_restapi/core/error/exception.dart';
 import 'package:notes_restapi/features/todo/data/model/color_model.dart';
 
 abstract class ColorRemoteDataSource {
@@ -7,13 +6,14 @@ abstract class ColorRemoteDataSource {
 }
 
 class ColorRemoteDataSourceImpl extends ColorRemoteDataSource {
-  final Dio fireStore;
+  final Dio http;
 
-  ColorRemoteDataSourceImpl(this.fireStore);
+  ColorRemoteDataSourceImpl(this.http);
 
   @override
-  Future<List<ColorModel>> getColors() {
-    // TODO: implement getColors
-    throw UnimplementedError();
+  Future<List<ColorModel>> getColors() async {
+    return await http
+        .get('/color')
+        .then((res) => res.data.map((e) => ColorModel.fromJson(e)).toList());
   }
 }
