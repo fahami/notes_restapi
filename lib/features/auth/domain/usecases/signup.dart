@@ -11,6 +11,10 @@ class SignUpUseCase extends UseCase<void, ParamsUser> {
 
   @override
   Future<Either<Failure, void>> call(ParamsUser params) {
-    return repository.signUp(params.user.email, params.user.password ?? '');
+    return repository.signUp(
+      params.user.name,
+      params.user.email,
+      params.user.password ?? '',
+    );
   }
 }

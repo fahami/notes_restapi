@@ -1,39 +1,37 @@
 import 'package:notes_restapi/core/error/exception.dart';
-import 'package:notes_restapi/core/network/network_info.dart';
-import 'package:notes_restapi/features/auth/domain/repositories/auth_repository.dart';
-import 'package:notes_restapi/features/todo/data/datasources/todo_local_datasource.dart';
-import 'package:notes_restapi/features/todo/data/datasources/todo_remote_datasource.dart';
-import 'package:notes_restapi/features/todo/data/model/todo_model.dart';
-import 'package:notes_restapi/features/todo/domain/entities/todo.dart';
 import 'package:notes_restapi/core/error/failures.dart';
 import 'package:dartz/dartz.dart';
-import 'package:notes_restapi/features/todo/domain/repositories/todos_repository.dart';
+import 'package:notes_restapi/core/network/network_info.dart';
+import 'package:notes_restapi/features/auth/data/datasources/auth_local_datasource.dart';
+import 'package:notes_restapi/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:notes_restapi/features/auth/domain/entities/user.dart';
+import 'package:notes_restapi/features/auth/domain/repositories/auth_repository.dart';
 
-class TodoRepositoryImpl implements AuthRepository {
-  final TodoLocalDataSource localDataSource;
-  final TodoRemoteDataSource remoteDataSource;
+class AuthRepositoryImpl implements AuthRepository {
+  final AuthLocalDataSource localDataSource;
+  final AuthRemoteDataSource remoteDataSource;
   final NetworkInfo networkInfo;
 
-  TodoRepositoryImpl({
+  AuthRepositoryImpl({
     required this.localDataSource,
     required this.remoteDataSource,
     required this.networkInfo,
   });
 
   @override
-  Future<Either<Failure, void>> addTodo(TodoModel todo) async {
+  Future<Either<Failure, User>> getUser() async {
     if (await networkInfo.isConnected) {
       try {
-        await remoteDataSource.addTodo(todo);
-        localDataSource.cacheTodo(todo);
-        return const Right(null);
+        final res = await remoteDataSource.getUser();
+        localDataSource.cacheUser(res);
+        return Right(res);
       } on ServerException {
         return Left(ServerFailure());
       }
     } else {
       try {
-        localDataSource.cacheTodo(todo);
-        return const Right(null);
+        final res = localDataSource.getUser();
+        return Right(res);
       } on CacheException {
         return Left(CacheFailure());
       }
@@ -41,104 +39,33 @@ class TodoRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, void>> deleteAllTodos() async {
-    if (await networkInfo.isConnected) {
-      try {
-        await remoteDataSource.deleteAllTodos();
-        localDataSource.deleteAllTodos();
-        return const Right(null);
-      } on ServerException {
-        return Left(ServerFailure());
-      }
-    } else {
-      try {
-        localDataSource.deleteAllTodos();
-        return const Right(null);
-      } on CacheException {
-        return Left(CacheFailure());
-      }
+  Future<Either<Failure, void>> signIn(String email, String password) async {
+    try {
+      final res = await remoteDataSource.signIn(email, password);
+      final cache = localDataSource.cacheUser(res);
+      return Right(cache);
+    } on ServerException {
+      return Left(ServerFailure());
     }
   }
 
   @override
-  Future<Either<Failure, void>> deleteTodo(TodoModel todo) async {
-    if (await networkInfo.isConnected) {
-      try {
-        await remoteDataSource.deleteTodo(todo);
-        localDataSource.deleteTodo(todo);
-        return const Right(null);
-      } on ServerException {
-        return Left(ServerFailure());
-      }
-    } else {
-      try {
-        localDataSource.deleteTodo(todo);
-        return const Right(null);
-      } on CacheException {
-        return Left(CacheFailure());
-      }
-    }
+  Future<Either<Failure, void>> signOut() {
+    // TODO: implement signOut
+    throw UnimplementedError();
   }
 
   @override
-  Future<Either<Failure, List<Todo>>> getTodos(int userId) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final todos = await remoteDataSource.getTodos(userId);
-        for (var todo in todos) {
-          localDataSource.cacheTodo(todo);
-        }
-        return Right(todos);
-      } on ServerException {
-        return Left(ServerFailure());
-      }
-    } else {
-      try {
-        final todos = localDataSource.getTodos();
-        return Right(todos);
-      } on CacheException {
-        return Left(CacheFailure());
-      }
-    }
-  }
-
-  @override
-  Future<Either<Failure, void>> updateTodo(TodoModel todo) async {
-    if (await networkInfo.isConnected) {
-      try {
-        await remoteDataSource.updateTodo(todo);
-        localDataSource.updateTodo(todo);
-        return const Right(null);
-      } on ServerException {
-        return Left(ServerFailure());
-      }
-    } else {
-      try {
-        localDataSource.cacheTodo(todo);
-        return const Right(null);
-      } on CacheException {
-        return Left(CacheFailure());
-      }
-    }
-  }
-
-  @override
-  Future<Either<Failure, Todo>> getTodoById(int id) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final todo = await remoteDataSource.getTodoById(id);
-        localDataSource.cacheTodo(todo);
-        return Right(todo);
-      } on ServerException {
-        return Left(ServerFailure());
-      }
-    } else {
-      try {
-        final todo = localDataSource.getTodoById(id);
-        return Right(todo);
-      } on CacheException {
-        return Left(CacheFailure());
-      }
+  Future<Either<Failure, void>> signUp(
+    String name,
+    String email,
+    String password,
+  ) async {
+    try {
+      final res = await remoteDataSource.signUp(name, email, password);
+      return Right(res);
+    } on ServerException {
+      return Left(ServerFailure());
     }
   }
 }
