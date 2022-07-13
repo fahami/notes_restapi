@@ -37,7 +37,7 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
   final TextEditingController _contentController = TextEditingController();
   bool isAction = false;
   final debouncer = Debouncer(milliseconds: 1000);
-  var box = Hive.box<UserModel>('user');
+  var userBox = Hive.box<UserModel>('user');
 
   late TodoModel todo;
 
@@ -45,7 +45,7 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
   void initState() {
     todo
       ..id = Random().nextInt(100)
-      ..user = box.get('user')!
+      ..user = userBox.get('user')!
       ..color = ColorModel(id: 6, colorName: "white", colorType: "#ffffff")
       ..reminder = DateTime.now()
       ..title = ""

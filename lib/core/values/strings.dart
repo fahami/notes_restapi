@@ -1,3 +1,3 @@
 class Values {
-  static final baseAPI = 'https://golang-bn.herokuapp.com/api';
+  static const baseAPI = 'https://golang-bn.herokuapp.com/api';
 }

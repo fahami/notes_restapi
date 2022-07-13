@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:notes_restapi/core/error/exception.dart';
 import 'package:notes_restapi/core/error/failures.dart';
 import 'package:dartz/dartz.dart';
@@ -39,11 +41,12 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, void>> signIn(String email, String password) async {
+  Future<Either<Failure, User>> signIn(String email, String password) async {
     try {
       final res = await remoteDataSource.signIn(email, password);
-      final cache = localDataSource.cacheUser(res);
-      return Right(cache);
+      localDataSource.cacheUser(res);
+      log(res.toJson().toString());
+      return Right(res);
     } on ServerException {
       return Left(ServerFailure());
     }

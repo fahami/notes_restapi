@@ -12,18 +12,18 @@ abstract class TodoLocalDataSource {
 }
 
 class TodoLocalDataSourceImpl implements TodoLocalDataSource {
-  final Box<TodoModel> hiveBox;
+  final Box<TodoModel> todoBox;
 
-  TodoLocalDataSourceImpl(this.hiveBox);
+  TodoLocalDataSourceImpl(this.todoBox);
 
   @override
   Future<void> cacheTodo(TodoModel todoToCache) {
-    return hiveBox.put(todoToCache.id, todoToCache);
+    return todoBox.put(todoToCache.id, todoToCache);
   }
 
   @override
   List<TodoModel> getTodos() {
-    final todos = hiveBox.values.toList();
+    final todos = todoBox.values.toList();
     if (todos.isNotEmpty) {
       return todos;
     } else {
@@ -33,7 +33,7 @@ class TodoLocalDataSourceImpl implements TodoLocalDataSource {
 
   @override
   TodoModel getTodoById(int id) {
-    final todo = hiveBox.get(id);
+    final todo = todoBox.get(id);
     if (todo != null) {
       return todo;
     } else {
@@ -43,16 +43,16 @@ class TodoLocalDataSourceImpl implements TodoLocalDataSource {
 
   @override
   Future<void> deleteAllTodos() async {
-    await hiveBox.clear();
+    await todoBox.clear();
   }
 
   @override
   Future<void> deleteTodo(TodoModel todo) {
-    return hiveBox.delete(todo.id);
+    return todoBox.delete(todo.id);
   }
 
   @override
   Future<void> updateTodo(TodoModel todo) {
-    return hiveBox.put(todo.id, todo);
+    return todoBox.put(todo.id, todo);
   }
 }

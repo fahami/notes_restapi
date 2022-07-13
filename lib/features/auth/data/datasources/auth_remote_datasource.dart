@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:hive/hive.dart';
 import 'package:notes_restapi/features/auth/data/model/user_model.dart';
+import 'package:notes_restapi/features/auth/domain/entities/user.dart';
 
 abstract class AuthRemoteDataSource {
   Future<UserModel> getUser();
@@ -19,7 +22,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<UserModel> getUser() async {
     try {
       final res = await httpClient.get('/user/profile');
-      return UserModel.fromJson(res.data);
+      return UserModel.fromJson(res.data['data']);
     } on DioError catch (e) {
       if (e.response != null) {
         return Future.error(e.response?.data);
@@ -36,9 +39,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'email': email,
         'password': password,
       });
-      userBox.put('user', UserModel.fromJson(res.data));
-      userBox.put('token', res.data['token']);
-      return UserModel.fromJson(res.data);
+      userBox.put('user', UserModel.fromJson(res.data['data']));
+      return UserModel.fromJson(res.data['data']);
     } on DioError catch (e) {
       if (e.response != null) {
         return Future.error(e.response?.data);
@@ -62,8 +64,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'email': email,
         'password': password,
       });
-      userBox.put('user', UserModel.fromJson(res.data));
-      userBox.put('token', res.data['token']);
+      userBox.put('user', UserModel.fromJson(res.data['data']));
     } on DioError catch (e) {
       if (e.response != null) {
         return Future.error(e.response?.data);
