@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,6 +21,7 @@ import 'package:notes_restapi/features/todo/presentation/pages/note/widgets/dele
 import 'package:notes_restapi/features/todo/presentation/pages/note/widgets/save.dart';
 import 'package:notes_restapi/features/todo/presentation/pages/note/widgets/swatch.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:uuid/uuid.dart';
 
 class NoteDetailScreen extends StatefulWidget {
   const NoteDetailScreen({Key? key, this.id, this.isNew = false})
@@ -49,7 +51,7 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
   @override
   void initState() {
     if (!widget.isNew) {
-      log("todoID: ${widget.id}");
+      print("todoID: ${widget.id}");
       context.read<EditTodoBloc>().add(EditLoad(widget.id!));
     }
     if (widget.isNew) {
@@ -87,7 +89,7 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
     return BlocConsumer<ColorCubit, ColorState>(
       listener: (context, state) {
         if (state is ColorLoaded) {
-          log("ColorLoaded ${context.read<ColorCubit>().selectedColor}");
+          print("ColorLoaded ${context.read<ColorCubit>().selectedColor}");
           setState(() {
             todo.color = context.read<ColorCubit>().selectedColor;
           });
@@ -140,7 +142,7 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
                   builder: (context, todoState) {
                     if (todoState is EditLoading) {
                       return const Center(child: CircularProgressIndicator());
-                    } else if (todoState is TodosError) {
+                    } else if (todoState is EditError) {
                       return const Text("Error");
                     } else if (todoState is EditLoaded) {
                       final state =
@@ -165,10 +167,7 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
                                 color: state.color.computeLuminance() > 0.5
                                     ? ThemeColor.typography
                                     : Colors.white),
-                            onChanged: (v) {
-                              todo.title = v;
-                              print(todo.title);
-                            },
+                            onChanged: (v) => todo.title = v,
                           ),
                           Text(
                             widget.isNew
@@ -208,10 +207,14 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
 
                                     debouncer.run(() {
                                       widget.isNew
-                                          ? context
+                                          ?
+                                          // log("saving: ${todo.title}")
+                                          context
                                               .read<EditTodoBloc>()
                                               .add(EditNew(todo: todo))
-                                          : context
+                                          :
+                                          // log("updating: ${todo.title}");
+                                          context
                                               .read<EditTodoBloc>()
                                               .add(EditUpdate(todo: todo));
                                     });

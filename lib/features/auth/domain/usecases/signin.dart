@@ -10,7 +10,7 @@ class SignInUseCase extends UseCase<User, ParamsAuth> {
   SignInUseCase(this.repository);
 
   @override
-  Future<Either<Failure, User>> call(ParamsAuth params) {
+  Future<Either<Failure, User>> call(ParamsAuth params) async {
     return repository.signIn(params.email, params.password);
   }
 }

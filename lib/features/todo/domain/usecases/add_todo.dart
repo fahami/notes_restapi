@@ -10,7 +10,7 @@ class AddTodo extends UseCase<void, Params> {
 
   AddTodo(this.repository);
   @override
-  Future<Either<Failure, void>> call(Params params) {
+  Future<Either<Failure, void>> call(Params params) async {
     return repository.addTodo(params.todo);
   }
 }

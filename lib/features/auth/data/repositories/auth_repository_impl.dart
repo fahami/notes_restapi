@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:notes_restapi/core/error/exception.dart';
 import 'package:notes_restapi/core/error/failures.dart';
 import 'package:dartz/dartz.dart';
@@ -26,14 +27,14 @@ class AuthRepositoryImpl implements AuthRepository {
         localDataSource.cacheUser(res);
         return Right(res);
       } on ServerException {
-        return Left(ServerFailure());
+        return const Left(ServerFailure());
       }
     } else {
       try {
         final res = localDataSource.getUser();
         return Right(res);
       } on CacheException {
-        return Left(CacheFailure());
+        return const Left(CacheFailure());
       }
     }
   }
@@ -44,15 +45,19 @@ class AuthRepositoryImpl implements AuthRepository {
       final res = await remoteDataSource.signIn(email, password);
       localDataSource.cacheUser(res);
       return Right(res);
-    } on ServerException {
-      return Left(ServerFailure());
+    } catch (e) {
+      return Left(ServerFailure(message: e));
     }
   }
 
   @override
-  Future<Either<Failure, void>> signOut() {
-    // TODO: implement signOut
-    throw UnimplementedError();
+  Future<Either<Failure, void>> signOut() async {
+    try {
+      await remoteDataSource.signOut();
+      return const Right(null);
+    } on ServerFailure {
+      return const Left(ServerFailure());
+    }
   }
 
   @override
@@ -64,8 +69,10 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final res = await remoteDataSource.signUp(name, email, password);
       return Right(res);
-    } on ServerException {
-      return Left(ServerFailure());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } catch (e) {
+      return Left(ServerFailure(message: e));
     }
   }
 }

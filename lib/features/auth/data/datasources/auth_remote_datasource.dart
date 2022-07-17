@@ -1,7 +1,9 @@
+import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:hive/hive.dart';
+import 'package:notes_restapi/di.dart';
 import 'package:notes_restapi/features/auth/data/model/user_model.dart';
 import 'package:notes_restapi/features/auth/domain/entities/user.dart';
 
@@ -15,9 +17,9 @@ abstract class AuthRemoteDataSource {
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final Dio httpClient;
   final Box<User> userBox;
-  static final GetStorage storage = GetStorage();
+  final GetStorage storage;
 
-  AuthRemoteDataSourceImpl(this.httpClient, this.userBox);
+  AuthRemoteDataSourceImpl(this.httpClient, this.userBox, this.storage);
 
   @override
   Future<UserModel> getUser() async {
@@ -42,21 +44,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       });
       userBox.put('user', UserModel.fromJson(res.data['data']));
       await storage.write('token', UserModel.fromJson(res.data['data']).token);
-      print("token: ${storage.read('token')}");
+      sl<Dio>().options.headers['Authorization'] = '${storage.read('token')}';
       return UserModel.fromJson(res.data['data']);
     } on DioError catch (e) {
-      if (e.response != null) {
-        return Future.error(e.response?.data);
-      } else {
-        return Future.error(e);
-      }
+      return Future.error(e.response?.data['message']);
     }
   }
 
   @override
-  Future<void> signOut() {
-    // TODO: implement signOut
-    throw UnimplementedError();
+  Future<void> signOut() async {
+    storage.erase();
+    userBox.clear();
+    httpClient.options.headers.clear();
   }
 
   @override
@@ -70,11 +69,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       userBox.put('user', UserModel.fromJson(res.data['data']));
       return UserModel.fromJson(res.data['data']);
     } on DioError catch (e) {
-      if (e.response != null) {
-        return Future.error(e.response?.data);
-      } else {
-        return Future.error(e);
-      }
+      return Future.error(e.response?.data['message']);
     }
   }
 }

@@ -10,7 +10,8 @@ Future<bool> showCustomDialog(BuildContext context, Widget content) async {
             borderRadius: BorderRadius.circular(16),
           ),
           insetPadding: EdgeInsets.zero,
-          content: content,
+          content: Container(
+              width: MediaQuery.of(context).size.width * 0.8, child: content),
         );
       });
   return isDone;

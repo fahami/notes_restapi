@@ -1,25 +1,46 @@
+import 'dart:developer';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
+import 'package:notes_restapi/core/network/api_client.dart';
 import 'package:notes_restapi/core/theme/color_theme.dart';
 import 'package:notes_restapi/core/theme/text_theme.dart';
 import 'package:notes_restapi/core/util/utils.dart';
+import 'package:notes_restapi/di.dart';
 import 'package:notes_restapi/features/auth/domain/entities/user.dart';
 import 'package:notes_restapi/features/todo/presentation/bloc/todo_bloc.dart';
 import 'package:notes_restapi/features/todo/presentation/cubit/color_cubit.dart';
+
 import 'package:notes_restapi/features/todo/presentation/pages/notes/widgets/search_bar.dart';
 
-class NotesScreen extends StatelessWidget {
-  NotesScreen({Key? key}) : super(key: key);
+class NotesScreen extends StatefulWidget {
+  const NotesScreen({Key? key}) : super(key: key);
 
-  var box = Hive.box<User>('user');
+  @override
+  State<NotesScreen> createState() => _NotesScreenState();
+}
+
+class _NotesScreenState extends State<NotesScreen> {
+  final box = sl<Box<User>>();
+  final g = sl<GetStorage>();
+
+  @override
+  void initState() {
+    log("dari user ${box.get('user')?.token}");
+    log("dari token ${g.read('token')}");
+    log("dari dio ${sl<Dio>().options.headers['Authorization']}");
+    context.read<ColorCubit>().getColors();
+    context.read<TodoBloc>().add(GetTodosEvent(box.get('user')!));
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    context.read<ColorCubit>().getColors();
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -64,11 +85,17 @@ class NotesScreen extends StatelessWidget {
             builder: (context, state) {
               if (state is TodosLoaded) {
                 if (state.todos.isEmpty) {
-                  return Center(
-                    child: Text(
-                      "Tidak ada catatan",
-                      style: ThemeText.titleStyle
-                          .copyWith(color: ThemeColor.disabled, fontSize: 18),
+                  return RefreshIndicator(
+                    onRefresh: () async => context
+                        .read<TodoBloc>()
+                        .add(GetTodosEvent(box.get('user')!)),
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Text(
+                        "Tidak ada catatan",
+                        style: ThemeText.titleStyle
+                            .copyWith(color: ThemeColor.disabled, fontSize: 18),
+                      ),
                     ),
                   );
                 }

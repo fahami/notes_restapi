@@ -14,7 +14,7 @@ import 'package:notes_restapi/features/auth/domain/usecases/get_user.dart';
 import 'package:notes_restapi/features/auth/domain/usecases/signin.dart';
 import 'package:notes_restapi/features/auth/domain/usecases/signout.dart';
 import 'package:notes_restapi/features/auth/domain/usecases/signup.dart';
-import 'package:notes_restapi/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:notes_restapi/features/auth/presentation/cubit/login_cubit.dart';
 import 'package:notes_restapi/features/todo/data/datasources/color_local_datasource.dart';
 import 'package:notes_restapi/features/todo/data/datasources/color_remote_datasource.dart';
 import 'package:notes_restapi/features/todo/data/datasources/todo_local_datasource.dart';
@@ -40,6 +40,9 @@ final sl = GetIt.instance;
 
 Future<void> init() async {
   GetStorage.init();
+  final GetStorage getStorage = GetStorage();
+  sl.registerLazySingleton(() => getStorage);
+
   // bloc
   sl.registerFactory(
     () => TodoBloc(
@@ -48,7 +51,7 @@ Future<void> init() async {
     ),
   );
   // cubit
-  sl.registerFactory(() => AuthCubit(
+  sl.registerFactory(() => LoginCubit(
         signInUseCase: sl(),
         signUpUseCase: sl(),
         signOutUseCase: sl(),
@@ -111,7 +114,7 @@ Future<void> init() async {
   sl.registerLazySingleton<AuthLocalDataSource>(
       () => AuthLocalDataSourceImpl(sl()));
   sl.registerLazySingleton<AuthRemoteDataSource>(
-      () => AuthRemoteDataSourceImpl(sl(), sl()));
+      () => AuthRemoteDataSourceImpl(sl(), sl(), sl()));
 
   // storage
   await Hive.initFlutter();
@@ -125,10 +128,9 @@ Future<void> init() async {
   final Box<TodoColor> colorBox = Hive.box('colors');
   final Box<User> userBox = Hive.box('user');
   // api services
-  final Dio httpClient = dio;
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
   sl.registerLazySingleton(() => InternetConnectionChecker());
-  sl.registerLazySingleton(() => httpClient);
+  sl.registerLazySingleton(() => dio);
   sl.registerLazySingleton(() => todoBox);
   sl.registerLazySingleton(() => colorBox);
   sl.registerLazySingleton(() => userBox);

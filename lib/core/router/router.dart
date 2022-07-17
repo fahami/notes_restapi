@@ -4,6 +4,7 @@ import 'package:notes_restapi/features/auth/domain/entities/user.dart';
 import 'package:notes_restapi/features/auth/presentation/pages/forgot_password/forgot_password.dart';
 import 'package:notes_restapi/features/auth/presentation/pages/login/login.dart';
 import 'package:notes_restapi/features/auth/presentation/pages/onboard/onboard.dart';
+import 'package:notes_restapi/features/auth/presentation/pages/user/user_screen.dart';
 import 'package:notes_restapi/features/todo/presentation/pages/error/error.dart';
 import 'package:notes_restapi/features/auth/presentation/pages/register/register.dart';
 import 'package:notes_restapi/features/todo/presentation/pages/note/note.dart';
@@ -41,6 +42,10 @@ class AppRouter {
         path: '/note/:id',
         builder: (context, state) =>
             NoteDetailScreen(id: int.tryParse(state.params['id']!)),
+      ),
+      GoRoute(
+        path: '/user',
+        builder: (context, state) => UserScreen(),
       ),
     ],
     errorBuilder: (context, state) => const ErrorScreen(),

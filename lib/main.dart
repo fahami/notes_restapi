@@ -6,6 +6,7 @@ import 'package:notes_restapi/core/util/bloc_observer.dart';
 import 'package:notes_restapi/di.dart' as di;
 import 'package:notes_restapi/di.dart';
 import 'package:notes_restapi/features/auth/domain/entities/user.dart';
+import 'package:notes_restapi/features/auth/presentation/cubit/login_cubit.dart';
 import 'package:notes_restapi/features/todo/presentation/bloc/edit_todo_bloc.dart';
 import 'package:notes_restapi/features/todo/presentation/bloc/todo_bloc.dart';
 import 'package:notes_restapi/features/todo/presentation/cubit/color_cubit.dart';
@@ -36,6 +37,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => sl<EditTodoBloc>(),
+        ),
+        BlocProvider(
+          create: (context) => sl<LoginCubit>(),
         ),
       ],
       child: MaterialApp.router(
