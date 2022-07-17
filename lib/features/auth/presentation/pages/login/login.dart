@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:notes_restapi/core/theme/color_theme.dart';
 import 'package:notes_restapi/core/theme/text_theme.dart';
 import 'package:notes_restapi/di.dart';
-import 'package:notes_restapi/features/auth/presentation/cubit/auth_cubit_cubit.dart';
+import 'package:notes_restapi/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:notes_restapi/features/todo/presentation/widgets/custom_button.dart';
 import 'package:notes_restapi/features/todo/presentation/widgets/custom_dialog.dart';
 

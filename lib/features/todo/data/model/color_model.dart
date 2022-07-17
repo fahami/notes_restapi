@@ -3,9 +3,9 @@ import 'package:notes_restapi/features/todo/domain/entities/color.dart';
 class ColorModel extends TodoColor {
   ColorModel({
     required int id,
-    required String colorName,
     required String colorType,
-  }) : super(id, colorName, colorType);
+    required String colorName,
+  }) : super(id, colorType, colorName);
 
   factory ColorModel.fromJson(Map<String, dynamic> json) => ColorModel(
         id: json['id'],

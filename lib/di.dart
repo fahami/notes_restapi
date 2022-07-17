@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:notes_restapi/core/network/api_client.dart';
 import 'package:notes_restapi/core/network/network_info.dart';
 import 'package:notes_restapi/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:notes_restapi/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:notes_restapi/features/auth/data/model/user_model.dart';
 import 'package:notes_restapi/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:notes_restapi/features/auth/domain/entities/user.dart';
 import 'package:notes_restapi/features/auth/domain/repositories/auth_repository.dart';
@@ -14,14 +14,14 @@ import 'package:notes_restapi/features/auth/domain/usecases/get_user.dart';
 import 'package:notes_restapi/features/auth/domain/usecases/signin.dart';
 import 'package:notes_restapi/features/auth/domain/usecases/signout.dart';
 import 'package:notes_restapi/features/auth/domain/usecases/signup.dart';
-import 'package:notes_restapi/features/auth/presentation/cubit/auth_cubit_cubit.dart';
+import 'package:notes_restapi/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:notes_restapi/features/todo/data/datasources/color_local_datasource.dart';
 import 'package:notes_restapi/features/todo/data/datasources/color_remote_datasource.dart';
 import 'package:notes_restapi/features/todo/data/datasources/todo_local_datasource.dart';
 import 'package:notes_restapi/features/todo/data/datasources/todo_remote_datasource.dart';
-import 'package:notes_restapi/features/todo/data/model/todo_model.dart';
 import 'package:notes_restapi/features/todo/data/repositories/color_repository_impl.dart';
 import 'package:notes_restapi/features/todo/data/repositories/todo_repository_impl.dart';
+import 'package:notes_restapi/features/todo/domain/entities/color.dart';
 import 'package:notes_restapi/features/todo/domain/entities/todo.dart';
 import 'package:notes_restapi/features/todo/domain/repositories/colors_repository.dart';
 import 'package:notes_restapi/features/todo/domain/repositories/todos_repository.dart';
@@ -36,11 +36,10 @@ import 'package:notes_restapi/features/todo/presentation/bloc/edit_todo_bloc.dar
 import 'package:notes_restapi/features/todo/presentation/bloc/todo_bloc.dart';
 import 'package:notes_restapi/features/todo/presentation/cubit/color_cubit.dart';
 
-import 'features/todo/data/model/color_model.dart';
-
 final sl = GetIt.instance;
 
 Future<void> init() async {
+  GetStorage.init();
   // bloc
   sl.registerFactory(
     () => TodoBloc(
@@ -49,7 +48,11 @@ Future<void> init() async {
     ),
   );
   // cubit
-  sl.registerFactory(() => AuthCubit(sl()));
+  sl.registerFactory(() => AuthCubit(
+        signInUseCase: sl(),
+        signUpUseCase: sl(),
+        signOutUseCase: sl(),
+      ));
   sl.registerFactory(() => ColorCubit(sl()));
   sl.registerFactory(() => EditTodoBloc(
         addTodo: sl(),
@@ -110,17 +113,19 @@ Future<void> init() async {
   sl.registerLazySingleton<AuthRemoteDataSource>(
       () => AuthRemoteDataSourceImpl(sl(), sl()));
 
-  // api services
-  final Dio httpClient = dio;
   // storage
   await Hive.initFlutter();
   Hive.registerAdapter(TodoAdapter());
   Hive.registerAdapter(UserAdapter());
-  Hive.registerAdapter(ColorAdapter());
-  final Box<TodoModel> todoBox = await Hive.openBox<TodoModel>('todos');
-  final Box<ColorModel> colorBox = await Hive.openBox<ColorModel>('colors');
-  final Box<UserModel> userBox = await Hive.openBox<UserModel>('user');
-
+  Hive.registerAdapter(TodoColorAdapter());
+  await Hive.openBox<Todo>('todos');
+  await Hive.openBox<TodoColor>('colors');
+  await Hive.openBox<User>('user');
+  final Box<Todo> todoBox = Hive.box('todos');
+  final Box<TodoColor> colorBox = Hive.box('colors');
+  final Box<User> userBox = Hive.box('user');
+  // api services
+  final Dio httpClient = dio;
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
   sl.registerLazySingleton(() => InternetConnectionChecker());
   sl.registerLazySingleton(() => httpClient);

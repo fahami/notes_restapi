@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,7 +9,7 @@ import 'package:notes_restapi/core/theme/color_theme.dart';
 import 'package:notes_restapi/core/theme/text_theme.dart';
 import 'package:notes_restapi/core/util/debouncer.dart';
 import 'package:notes_restapi/core/util/utils.dart';
-import 'package:notes_restapi/features/auth/data/model/user_model.dart';
+import 'package:notes_restapi/features/auth/domain/entities/user.dart';
 import 'package:notes_restapi/features/todo/data/model/color_model.dart';
 import 'package:notes_restapi/features/todo/data/model/todo_model.dart';
 import 'package:notes_restapi/features/todo/domain/entities/color.dart';
@@ -36,25 +36,25 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
 
   final TextEditingController _contentController = TextEditingController();
   bool isAction = false;
-  final debouncer = Debouncer(milliseconds: 1000);
-  var userBox = Hive.box<UserModel>('user');
+  final debouncer = Debouncer(milliseconds: 2000);
+  static final userBox = Hive.box<User>('user');
 
-  late TodoModel todo;
+  TodoModel todo = TodoModel(
+      title: "...",
+      isi: "...",
+      color: ColorModel(id: 6, colorName: "white", colorType: "#ffffff"),
+      reminder: DateTime.now(),
+      user: userBox.get('user')!);
 
   @override
   void initState() {
-    todo
-      ..id = Random().nextInt(100)
-      ..user = userBox.get('user')!
-      ..color = ColorModel(id: 6, colorName: "white", colorType: "#ffffff")
-      ..reminder = DateTime.now()
-      ..title = ""
-      ..isi = "";
-    if (!widget.isNew) context.read<EditTodoBloc>().add(EditLoad(widget.id!));
+    if (!widget.isNew) {
+      log("todoID: ${widget.id}");
+      context.read<EditTodoBloc>().add(EditLoad(widget.id!));
+    }
     if (widget.isNew) {
-      context.read<EditTodoBloc>()
-        ..emit(EditLoaded(todo))
-        ..add(EditSave(todo: todo));
+      context.read<EditTodoBloc>().emit(EditLoaded(todo));
+      // ..add(EditNew(todo: todo));
     }
     super.initState();
   }
@@ -87,10 +87,11 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
     return BlocConsumer<ColorCubit, ColorState>(
       listener: (context, state) {
         if (state is ColorLoaded) {
+          log("ColorLoaded ${context.read<ColorCubit>().selectedColor}");
           setState(() {
-            todo.color = context.read<ColorCubit>().selectedColor as ColorModel;
+            todo.color = context.read<ColorCubit>().selectedColor;
           });
-          context.read<EditTodoBloc>().add(EditSave(todo: todo));
+          // context.read<EditTodoBloc>().add(EditSave(todo: todo));
         }
       },
       builder: (context, state) {
@@ -206,9 +207,13 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
                                     });
 
                                     debouncer.run(() {
-                                      context
-                                          .read<EditTodoBloc>()
-                                          .add(EditSave(todo: todo));
+                                      widget.isNew
+                                          ? context
+                                              .read<EditTodoBloc>()
+                                              .add(EditNew(todo: todo))
+                                          : context
+                                              .read<EditTodoBloc>()
+                                              .add(EditUpdate(todo: todo));
                                     });
                                   },
                                 )

@@ -5,7 +5,7 @@ import 'package:notes_restapi/features/auth/domain/entities/user.dart';
 abstract class AuthRepository {
   Future<Either<Failure, User>> getUser();
   Future<Either<Failure, User>> signIn(String email, String password);
-  Future<Either<Failure, void>> signUp(
+  Future<Either<Failure, User>> signUp(
     String name,
     String email,
     String password,

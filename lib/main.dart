@@ -5,7 +5,7 @@ import 'package:notes_restapi/core/router/router.dart';
 import 'package:notes_restapi/core/util/bloc_observer.dart';
 import 'package:notes_restapi/di.dart' as di;
 import 'package:notes_restapi/di.dart';
-import 'package:notes_restapi/features/auth/data/model/user_model.dart';
+import 'package:notes_restapi/features/auth/domain/entities/user.dart';
 import 'package:notes_restapi/features/todo/presentation/bloc/edit_todo_bloc.dart';
 import 'package:notes_restapi/features/todo/presentation/bloc/todo_bloc.dart';
 import 'package:notes_restapi/features/todo/presentation/cubit/color_cubit.dart';
@@ -14,17 +14,18 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await di.init();
   BlocOverrides.runZoned(
-    () => runApp(const MyApp()),
+    () => runApp(MyApp()),
     blocObserver: MyBlocObserver(),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-  static final Box<UserModel> userBox = Hive.box('user');
+  MyApp({Key? key}) : super(key: key);
+  final userBox = sl<Box<User>>();
 
   @override
   Widget build(BuildContext context) {
+    // userBox.clear();
     return MultiBlocProvider(
       providers: [
         BlocProvider(

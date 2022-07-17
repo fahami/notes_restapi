@@ -20,9 +20,9 @@ class TodoAdapter extends TypeAdapter<Todo> {
       id: fields[0] as int?,
       title: fields[1] as String,
       isi: fields[2] as String,
-      color: fields[3] as ColorModel,
+      color: fields[3] as TodoColor,
       reminder: fields[5] as DateTime,
-      user: fields[4] as UserModel,
+      user: fields[4] as User,
     );
   }
 

@@ -1,6 +1,7 @@
 import 'package:hive/hive.dart';
 import 'package:notes_restapi/core/error/exception.dart';
 import 'package:notes_restapi/features/todo/data/model/todo_model.dart';
+import 'package:notes_restapi/features/todo/domain/entities/todo.dart';
 
 abstract class TodoLocalDataSource {
   List<TodoModel> getTodos();
@@ -12,7 +13,7 @@ abstract class TodoLocalDataSource {
 }
 
 class TodoLocalDataSourceImpl implements TodoLocalDataSource {
-  final Box<TodoModel> todoBox;
+  final Box<Todo> todoBox;
 
   TodoLocalDataSourceImpl(this.todoBox);
 
@@ -25,7 +26,7 @@ class TodoLocalDataSourceImpl implements TodoLocalDataSource {
   List<TodoModel> getTodos() {
     final todos = todoBox.values.toList();
     if (todos.isNotEmpty) {
-      return todos;
+      return todos as List<TodoModel>;
     } else {
       throw CacheException('No todos found');
     }
@@ -35,7 +36,7 @@ class TodoLocalDataSourceImpl implements TodoLocalDataSource {
   TodoModel getTodoById(int id) {
     final todo = todoBox.get(id);
     if (todo != null) {
-      return todo;
+      return todo as TodoModel;
     } else {
       throw CacheException('No todo found');
     }

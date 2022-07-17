@@ -13,8 +13,8 @@ class ColorCubit extends Cubit<ColorState> {
   ColorCubit(this.getTodoColors) : super(const ColorLoaded(Colors.white));
 
   List<TodoColor> colors = [];
-  final defaultTodoColor = TodoColor(6, "white", "#ffffff");
-  TodoColor selectedColor = TodoColor(6, "white", "#ffffff");
+  final defaultTodoColor = TodoColor(6, "#ffffff", "white");
+  TodoColor selectedColor = TodoColor(6, "#ffffff", "white");
 
   void changeColor(int colorId) {
     emit(const ColorLoading());

@@ -1,6 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:hive/hive.dart';
-import 'package:notes_restapi/features/auth/data/model/user_model.dart';
+import 'package:notes_restapi/features/auth/domain/entities/user.dart';
 import 'package:notes_restapi/features/auth/presentation/pages/forgot_password/forgot_password.dart';
 import 'package:notes_restapi/features/auth/presentation/pages/login/login.dart';
 import 'package:notes_restapi/features/auth/presentation/pages/onboard/onboard.dart';
@@ -10,7 +10,7 @@ import 'package:notes_restapi/features/todo/presentation/pages/note/note.dart';
 import 'package:notes_restapi/features/todo/presentation/pages/notes/notes.dart';
 
 class AppRouter {
-  static final Box<UserModel> userBox = Hive.box('user');
+  static final Box<User> userBox = Hive.box('user');
   static final router = GoRouter(
     routes: [
       GoRoute(

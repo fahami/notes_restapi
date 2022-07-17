@@ -1,5 +1,8 @@
+import 'package:intl/intl.dart';
 import 'package:notes_restapi/features/auth/data/model/user_model.dart';
+import 'package:notes_restapi/features/auth/domain/entities/user.dart';
 import 'package:notes_restapi/features/todo/data/model/color_model.dart';
+import 'package:notes_restapi/features/todo/domain/entities/color.dart';
 import 'package:notes_restapi/features/todo/domain/entities/todo.dart';
 
 class TodoModel extends Todo {
@@ -7,9 +10,9 @@ class TodoModel extends Todo {
     int? id,
     required String title,
     required String isi,
-    required ColorModel color,
+    required TodoColor color,
     required DateTime reminder,
-    required UserModel user,
+    required User user,
   }) : super(
             id: id,
             title: title,
@@ -22,9 +25,9 @@ class TodoModel extends Todo {
     int? id,
     String? title,
     String? isi,
-    ColorModel? color,
+    TodoColor? color,
     DateTime? reminder,
-    UserModel? user,
+    User? user,
   }) {
     return TodoModel(
       id: id ?? this.id,
@@ -40,17 +43,17 @@ class TodoModel extends Todo {
         id: json['id'],
         title: json['title'],
         isi: json['isi'],
-        color: json['color'],
-        reminder: json['reminder'],
-        user: json['user'],
+        color: ColorModel.fromJson(json['color']),
+        reminder: json['reminder'] == null
+            ? DateTime.now()
+            : DateTime.parse(json['reminder']),
+        user: UserModel.fromJson(json['user']),
       );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
         'title': title,
         'isi': isi,
-        'color': color,
-        'reminder': reminder.toIso8601String(),
-        'user': user,
+        'reminder': "${DateFormat("yyyy-MM-ddTHH:mm:ss").format(reminder)}Z",
+        'colorId': color.id,
       };
 }

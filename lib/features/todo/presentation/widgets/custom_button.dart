@@ -12,10 +12,6 @@ class CustomButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: onPressed,
-      child: Text(
-        text,
-        style: ThemeText.bodyStyle,
-      ),
       style: TextButton.styleFrom(
         primary: Colors.white,
         backgroundColor:
@@ -24,6 +20,10 @@ class CustomButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
         ),
         minimumSize: const Size(double.infinity, 48),
+      ),
+      child: Text(
+        text,
+        style: ThemeText.bodyStyle,
       ),
     );
   }

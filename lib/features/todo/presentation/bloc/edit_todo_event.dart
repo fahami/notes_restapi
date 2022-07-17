@@ -18,10 +18,19 @@ class EditLoad extends EditTodoEvent {
   List<Object> get props => [todoId];
 }
 
-class EditSave extends EditTodoEvent {
+class EditUpdate extends EditTodoEvent {
   final TodoModel todo;
 
-  const EditSave({required this.todo});
+  const EditUpdate({required this.todo});
+
+  @override
+  List<Object> get props => [todo];
+}
+
+class EditNew extends EditTodoEvent {
+  final TodoModel todo;
+
+  const EditNew({required this.todo});
 
   @override
   List<Object> get props => [todo];

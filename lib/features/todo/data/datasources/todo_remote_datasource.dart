@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dio/dio.dart';
 import 'package:notes_restapi/features/todo/data/model/todo_model.dart';
 
@@ -17,6 +19,7 @@ class TodoRemoteDataSourceImpl implements TodoRemoteDataSource {
 
   @override
   Future<void> addTodo(TodoModel todo) async {
+    log("add: ${todo.toJson()}");
     await http.post('/todo', data: todo.toJson());
   }
 
@@ -32,20 +35,23 @@ class TodoRemoteDataSourceImpl implements TodoRemoteDataSource {
 
   @override
   Future<TodoModel> getTodoById(int id) async {
-    return await http
-        .get('/todo/$id')
-        .then((res) => TodoModel.fromJson(res.data));
+    return await http.get('/todo/$id').then(
+          (res) => TodoModel.fromJson(res.data['data']),
+        );
   }
 
   @override
   Future<List<TodoModel>> getTodos(int userid) async {
-    return await http
-        .get('/todo')
-        .then((res) => res.data.map((e) => TodoModel.fromJson(e)).toList());
+    return await http.get('/todo').then(
+          (res) => res.data['data']
+              .map<TodoModel>((e) => TodoModel.fromJson(e))
+              .toList(),
+        );
   }
 
   @override
   Future<void> updateTodo(TodoModel todo) async {
+    log("update: ${todo.toJson()}");
     await http.put('/todo/${todo.id}', data: todo.toJson());
   }
 }

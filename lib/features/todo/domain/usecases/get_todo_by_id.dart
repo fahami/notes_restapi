@@ -10,7 +10,7 @@ class GetTodoById extends UseCase<Todo, int> {
   GetTodoById(this.repository);
 
   @override
-  Future<Either<Failure, Todo>> call(int todoId) {
-    return repository.getTodoById(todoId);
+  Future<Either<Failure, Todo>> call(int params) {
+    return repository.getTodoById(params);
   }
 }

@@ -31,7 +31,16 @@ class EditTodoBloc extends Bloc<EditTodoEvent, EditTodoState> {
       );
     });
 
-    on<EditSave>((event, emit) async {
+    on<EditUpdate>((event, emit) async {
+      final state = this.state as EditLoaded;
+      final failureOrTodo = await updateTodo(Params(todo: event.todo));
+      failureOrTodo.fold(
+        (failure) => emit(EditError(failure.toString())),
+        (todo) => emit(EditLoaded(state.todo)),
+      );
+    });
+
+    on<EditNew>((event, emit) async {
       final state = this.state as EditLoaded;
       final failureOrTodo = await addTodo(Params(todo: event.todo));
       failureOrTodo.fold(
@@ -51,7 +60,7 @@ class EditTodoBloc extends Bloc<EditTodoEvent, EditTodoState> {
 
     on<EditChangeColor>((event, emit) {
       final state = this.state as EditLoaded;
-      add(EditSave(todo: state.todo));
+      add(EditUpdate(todo: state.todo));
     });
   }
 }

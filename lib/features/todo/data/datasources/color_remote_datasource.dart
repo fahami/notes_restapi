@@ -12,8 +12,8 @@ class ColorRemoteDataSourceImpl extends ColorRemoteDataSource {
 
   @override
   Future<List<ColorModel>> getColors() async {
-    return await http
-        .get('/color')
-        .then((res) => res.data.map((e) => ColorModel.fromJson(e)).toList());
+    return await http.get('/color').then((res) => res.data['data']
+        .map<ColorModel>((e) => ColorModel.fromJson(e))
+        .toList());
   }
 }

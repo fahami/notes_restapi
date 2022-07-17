@@ -28,7 +28,7 @@ class SaveButton extends StatelessWidget {
       ),
       onTap: () {
         todo.reminder = DateTime.now();
-        context.read<EditTodoBloc>().add(EditSave(todo: todo));
+        context.read<EditTodoBloc>().add(EditUpdate(todo: todo));
       },
     );
   }

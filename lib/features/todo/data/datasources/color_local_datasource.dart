@@ -1,6 +1,7 @@
 import 'package:hive/hive.dart';
 import 'package:notes_restapi/core/error/exception.dart';
 import 'package:notes_restapi/features/todo/data/model/color_model.dart';
+import 'package:notes_restapi/features/todo/domain/entities/color.dart';
 
 abstract class ColorLocalDataSource {
   Future<List<ColorModel>> getColors();
@@ -8,7 +9,7 @@ abstract class ColorLocalDataSource {
 }
 
 class ColorLocalDataSourceImpl extends ColorLocalDataSource {
-  final Box<ColorModel> hiveBox;
+  final Box<TodoColor> hiveBox;
 
   ColorLocalDataSourceImpl(this.hiveBox);
 
@@ -16,7 +17,7 @@ class ColorLocalDataSourceImpl extends ColorLocalDataSource {
   Future<List<ColorModel>> getColors() async {
     final colors = hiveBox.values.toList();
     if (colors.isNotEmpty) {
-      return colors;
+      return colors as List<ColorModel>;
     } else {
       throw CacheException('No colors found');
     }

@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:hive/hive.dart';
-import 'package:notes_restapi/features/auth/data/model/user_model.dart';
-import 'package:notes_restapi/features/todo/data/model/color_model.dart';
+import 'package:notes_restapi/features/auth/domain/entities/user.dart';
+import 'package:notes_restapi/features/todo/domain/entities/color.dart';
 part 'todo.g.dart';
 
 @HiveType(typeId: 0)
@@ -13,9 +13,9 @@ class Todo extends HiveObject with EquatableMixin {
   @HiveField(2)
   String isi;
   @HiveField(3)
-  ColorModel color;
+  TodoColor color;
   @HiveField(4)
-  UserModel user;
+  User user;
   @HiveField(5)
   DateTime reminder;
 
